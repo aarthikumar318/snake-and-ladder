@@ -91,6 +91,11 @@ export default function SnakeAndLadder() {
   const [log, setLog] = useState([]);
   const [winner, setWinner] = useState(null);
   const rollTimer = useRef(null);
+  const turnRef = useRef(0);
+
+  useEffect(() => {
+    turnRef.current = turn;
+  }, [turn]);
 
   useEffect(() => () => clearTimeout(rollTimer.current), []);
 
@@ -124,11 +129,12 @@ export default function SnakeAndLadder() {
         settleMove(final);
       }
     }, 70);
-  }, [rolling, phase, players, turn]);
+  }, [rolling, phase]);
 
   const settleMove = (value) => {
+    const activeIndex = turnRef.current;
     setPlayers((prev) => {
-      const current = prev[turn];
+      const current = prev[activeIndex];
       let target = current.pos + value;
       let bounced = false;
       if (target > 100) {
@@ -148,10 +154,10 @@ export default function SnakeAndLadder() {
         pushLog(`${current.name} rolled a ${value} and moved to ${final}.`);
       }
 
-      const next = prev.map((p, i) => (i === turn ? { ...p, pos: landed } : p));
+      const next = prev.map((p, i) => (i === activeIndex ? { ...p, pos: landed } : p));
 
       setTimeout(() => {
-        setPlayers((p2) => p2.map((p, i) => (i === turn ? { ...p, pos: final } : p)));
+        setPlayers((p2) => p2.map((p, i) => (i === activeIndex ? { ...p, pos: final } : p)));
         setRolling(false);
         if (final === 100) {
           setWinner(current);
